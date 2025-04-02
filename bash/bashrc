@@ -1,0 +1,195 @@
+# BASH TODO 
+# make something that will open a file with the current date in the format 240307.md
+# configure a nerdfont?
+#
+#
+# need to figure out how to configuer bash env variables using nix
+#
+#
+#
+
+
+
+
+# if don't have tput then don't do anyhting
+if ! command -v tput &> /dev/null
+then
+    return
+fi
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# bash colors / prompt
+source "/home/$USER/.nix-profile/etc/profile.d/hm-session-vars.sh"
+
+export PS1="\u\[$(tput sgr0)\]\[\033[38;5;24m\]@\[$(tput sgr0)\]\h:\[$(tput sgr0)\]\[\033[38;5;202m\][\w]\[$(tput sgr0)\]\[\033[38;5;11m\]\$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/')\[$(tput sgr0)\]⇁ \[$(tput sgr0)\]"
+
+HISTCONTROL=erasedups
+HISTFILESIZE=100000
+HISTSIZE=10000
+
+shopt -s histappend
+shopt -s checkwinsize
+shopt -s extglob
+shopt -s globstar
+shopt -s checkjobs
+
+# ssh forwarding  
+alias ka='ssh-add'
+
+# init zoxide
+eval "$(zoxide init bash)"
+
+# default editor
+export EDITOR="vi"
+
+# aliases
+## open file aliases
+export PERSONAL_GIT=~/gitprojects/personal/
+alias v='vim'
+alias sv="sudo vim -u ~/gitprojects/personal/config/neovim-nvim/nvim.lua"
+alias svi="sv"
+alias ptodo='cd $PERSONAL_GIT && $EDITOR personal_notes/personal_todo.md'
+alias todo='cd $PERSONAL_GIT && $EDITOR todo.md'
+alias meet='cd $PERSONAL_GIT && $EDITOR notes/meetings/meeting-notes.md'
+alias meeting='cd $PERSONAL_GIT && $EDITOR notes/meetings/meeting-notes.md'
+# alias server_setup='cd ~/gitprojects/server_setup/ && $EDITOR .'
+alias tmc='cd $PERSONAL_GIT && $EDITOR config/tmux/config_tmux'
+alias nvc='cd $PERSONAL_GIT && $EDITOR config/neovim/config_neovim'
+
+## common use aliases
+alias ssh='ssh -A'
+alias cd='z'
+alias la='ls -la'
+
+# git commands
+alias gf='git fetch'
+alias gp='git pull'
+alias gfp='gf && gp'
+alias gfpw='git fetch w master; git pull w master; git push w master'
+alias gr='gf && gp'
+alias gc='git commit'
+alias ga='git add $(pwd)'
+alias gl='git log'
+alias gss='git status -s'
+alias gs='git status'
+alias gd='git diff'
+alias gds='git diff --staged'
+alias lg='lazygit'
+alias gu='gf && gp'
+alias gU='ka && gf && gp'
+
+## git push
+alias gP='git push'
+alias gpsh='git push'
+### auto git push
+alias gg='(cd ~/gitprojects/personal || cd ~/git-projects/personal || cd ~/git-stuff/personal) && git add . && git commit -m "autoupdate" && git push'
+
+## git checkout
+alias gch='git checkout'
+
+## git subtree
+## Push / Pull / Merge Subtree
+alias gstP='git subtree push --prefix=config git@github.com:jjamesmartiin/config.git master --rejoin'
+alias gstp='git subtree pull --prefix=config git@github.com:jjamesmartiin/config.git master'
+alias gstm='git subtree merge --prefix=config git@github.com:jjamesmartiin/config.git master --rejoin'
+
+## tmux
+alias tm='tmux'
+alias tma='tmux attach -t'
+alias ta='tmux attach'
+alias tml='tm ls'
+alias tmk='tmux kill-session'
+alias tmK='tmux kill-server'
+
+# home manager
+alias hms='export NIXPKGS_ALLOW_UNFREE=1; cd ~/gitprojects/personal/config/home-manager && nix-shell --run "home-manager switch" && cd -'
+alias hmsb='export NIXPKGS_ALLOW_UNFREE=1; cd ~/gitprojects/personal/config/home-manager && nix-shell --run "home-manager switch -b backup" && cd -'
+alias hme='cd ~/gitprojects/personal/ && $EDITOR ~/gitprojects/personal/config/home-manager/home.nix'
+alias nce='cd ~/gitprojects/personal/ && $EDITOR /etc/nixos/configuration.nix'
+
+# nix
+## wsl 
+alias set_nix_path="echo 'export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos:nixos-config=/home/${USER}/gitprojects/personal/config/nix/wsl/configuration.nix:/nix/var/nix/profiles/per-user/root/channels && nixos-rebuild switch'"
+alias nix_path_wsl_set="set_nix_path"
+alias wsl_rebuild_command="set_nix_path"
+
+
+# personal journaling
+alias jnl='cd ~/gitprojects/personal/ && $EDITOR personal_notes/journal/journal.md.cpt'
+alias jnal='jnl'
+alias jn='jnl'
+
+# bluetooth
+alias btctl='bluetoothctl'
+
+# personal
+alias stocks='cd ~/gitprojects/personal/personal_notes/ && $EDITOR stocks-think_or_swim.md'
+
+
+#
+#
+
+# 2fa aliases
+alias agenixI='agenix -i ~/.ssh/2fa_key/2fa'
+alias agenixi='agenixI'
+alias agenixir='agenixI -r'
+alias agenixi-rk-dev='git add google-authenticator-dev* ssmtp-authfile.age monit-control.conf.age monit.pem.age'
+alias agenixi-rk-bof='git add google-authenticator* ssmtp-authfile.age monit-control.conf.age monit.pem.age'
+
+# export IP for remote viewing of markdown files
+export MARKDOWN_IP=$(ip addr show $(ip route | awk '/default/ {print $5}') | awk '/inet / {print $2}' | cut -d/ -f1)
+
+# make a bind for finding history
+bind '"\C-r": "hstr"'
+
+# get the keyscan
+alias getKey='ssh-keyscan -t ed25519'
+
+# alias to edit the known_hosts file
+alias khost='vim ~/.ssh/known_hosts'
+alias kh=khost
+alias khf=khost
+
+
+# alias for confirming the week number
+alias week="date +%V"
+alias wk=week
+
+# alias for starting the vpn server
+alias hvpnstart="sudo wg-quick up /run/agenix/UnifiJamesm-wg0.conf"
+alias hvpnstop="sudo wg-quick down /run/agenix/UnifiJamesm-wg0.conf"
+alias hvpn=hvpnstart
+# work vpn server
+alias wvpnstart="sudo wg-quick up /run/agenix/workTest-wg2.conf"
+alias wvpnstop="sudo wg-quick down /run/agenix/workTest-wg2.conf"
+alias wvpn=wvpnstart
+
+
+# nix-shell
+alias ns="nix-shell"
+
+
+
+# do this at the end so it's faster and if I cancel the rest of the bashrc was still set
+eval "$(ssh-agent)"
+# eval "$(ssh-add)" # uncomment for always adding it
+
+# HSTR configuration - add this to ~/.bashrc
+alias hh=hstr                    # hh to be alias for hstr
+export HSTR_CONFIG=hicolor       # get more colors
+shopt -s histappend              # append new history items to .bash_history
+export HISTCONTROL=ignorespace   # leading space hides commands from history
+export HISTSIZE=${HISTFILESIZE}  # increase history size (default is 500)
+# ensure synchronization between bash memory and history file
+export PROMPT_COMMAND="history -a; history -n; ${PROMPT_COMMAND}"
+if [[ $- =~ .*i.* ]]; then bind '"\C-r": "\C-a hstr -- \C-j"'; fi
+# if this is interactive shell, then bind 'kill last command' to Ctrl-x k
+if [[ $- =~ .*i.* ]]; then bind '"\C-xk": "\C-a hstr -k \C-j"'; fi
+export HSTR_TIOCSTI=y
+
+
